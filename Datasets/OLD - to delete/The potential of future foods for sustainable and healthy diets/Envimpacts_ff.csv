@@ -1,0 +1,128 @@
+Study,Functional_unit,Typeweight,Species,Feed_or_place,Impact,Impact_dm_edible,Watercontent
+Aubin et al. 2017,1 kg mussels,Dry weight,Mussel,onevalue-bouchotsystem,GWP (kg CO2 eq),7.556642636,80.58
+Aubin et al. 2017,1 kg mussels,Dry weight,Mussel,onevalue-bouchotsystem,LU (m2),12.10092688,80.58
+"Finnigan et al., 2010",1kg Mycoprotein,Dry weight,Mycoprotein,LCA1,GWP (kg CO2 eq),12.4,75
+"Finnigan et al., 2010",1kg Mycoprotein,Dry weight,Mycoprotein,LCA1,LU (m2),21.2,75
+"Finnigan et al., 2017",1kg Mycoprotein,Dry weight,Mycoprotein,Chapterbook,GWP (kg CO2 eq),6.4,75
+"Gnansounou et al., (2016)",1 kg microalgae,Dry weight,Chlorella,Optimistic,GWP (kg CO2 eq),9.759679105,90.67
+"Gnansounou et al., (2016)",1 kg microalgae,Dry weight,Chlorella,State of the art,GWP (kg CO2 eq),10.22621661,90.67
+Henriksson et al 2017,1 kg Tilapia,Dry weight,Tilapia,Pond,GWP (kg CO2 eq),94.07674097,78.08
+Henriksson et al 2017,1 kg Tilapia,Dry weight,Tilapia,Cage,GWP (kg CO2 eq),91.11757743,78.08
+Henriksson et al 2017,1 kg Tilapia,Dry weight,Tilapia,Pond,LU (m2),106.653186,78.08
+Henriksson et al 2017,1 kg Tilapia,Dry weight,Tilapia,Cage,LU (m2),103.4474255,78.08
+Henriksson et al 2018,1 kg Tilapia,Dry weight,Tilapia,Pond Indonesia,GWP (kg CO2 eq),62.75892681,78.08
+Henriksson et al 2018,1 kg Tilapia,Dry weight,Tilapia,Pond Indonesia,LU (m2),58.44347998,78.08
+Irribarren et al 2010,1 kg mussels,Dry weight,Mussel,onevalue-raft,GWP (kg CO2 eq),10.12272571,80.58
+"Joensuu & Silvenus, 2017",1 kg larvae,Dry weight,Mealworm,Baselinemean,GWP (kg CO2 eq),8.342303552,62.35
+"Joensuu & Silvenus, 2017",1 kg larvae,Dry weight,Mealworm,By-productsmean,GWP (kg CO2 eq),8.073196986,62.35
+"Joensuu & Silvenus, 2017",1 kg larvae,Dry weight,Mealworm,By-products low emissionsmean,GWP (kg CO2 eq),5.382131324,62.35
+Lourguioui et al 2017,1 kg mussels,Dry weight,Mussel,current scenario,GWP (kg CO2 eq),8.668039821,80.58
+Lourguioui et al 2017,1 kg mussels,Dry weight,Mussel,scenariocompetitive,GWP (kg CO2 eq),10.25575009,80.58
+Lourguioui et al 2017,1 kg mussels,Dry weight,Mussel,scenariocooperative,GWP (kg CO2 eq),5.32097494,80.58
+Lourguioui et al 2017,1 kg mussels,Dry weight,Mussel,current scenario,LU (m2),0.214555441,80.58
+Lourguioui et al 2017,1 kg mussels,Dry weight,Mussel,scenariocompetitive,LU (m2),0.214555441,80.58
+Lourguioui et al 2017,1 kg mussels,Dry weight,Mussel,scenariocooperative,LU (m2),0.068657741,80.58
+Mattick et al. (2015),1 kg of cultured meat,Dry weight,Cultured meat,Soy hydrosilate,GWP (kg CO2 eq),20.4638472,63.35
+Mattick et al. (2015),1 kg of cultured meat,Dry weight,Cultured meat,Soy hydrosilate,GWP (kg CO2 eq),10.2319236,63.35
+Mattick et al. (2015),1 kg of cultured meat,Dry weight,Cultured meat,Soy hydrosilate,GWP (kg CO2 eq),69.57708049,63.35
+Mattick et al. (2015),1 kg of cultured meat,Dry weight,Cultured meat,Soy hydrosilate,EU (MJ),289.2223738,63.35
+Mattick et al. (2015),1 kg of cultured meat,Dry weight,Cultured meat,Soy hydrosilate,EU (MJ),144.6111869,63.35
+Mattick et al. (2015),1 kg of cultured meat,Dry weight,Cultured meat,Soy hydrosilate,EU (MJ),983.3560709,63.35
+Mattick et al. (2015),1 kg of cultured meat,Dry weight,Cultured meat,Soy hydrosilate,LU (m2),15.00682128,63.35
+Mattick et al. (2015),1 kg of cultured meat,Dry weight,Cultured meat,Soy hydrosilate,LU (m2),7.503410641,63.35
+Mattick et al. (2015),1 kg of cultured meat,Dry weight,Cultured meat,Soy hydrosilate,LU (m2),51.02319236,63.35
+"Oonincx and de Boer, 2012",1 kg larvae,Dry weight,Mealworm,Carrots + mixed grains,GWP (kg CO2 eq),7.12979,62.832
+"Oonincx and de Boer, 2012",1 kg larvae,Dry weight,Mealworm,Carrots + mixed grains,EU (MJ),90.59,62.832
+"Oonincx and de Boer, 2012",1 kg larvae,Dry weight,Mealworm,Carrots + mixed grains,LU (m2),9.58,62.832
+Parker et al. 2015,1 kg tuna,Dry weight,Tuna,Atlantic ocean,GWP (kg CO2 eq),9.453602991,70.58
+Parker et al. 2015,1 kg tuna,Dry weight,Tuna,Indian ocean,GWP (kg CO2 eq),9.751019714,70.58
+Parker et al. 2015,1 kg tuna,Dry weight,Tuna,Pacific ocean,GWP (kg CO2 eq),7.414174031,70.58
+Parker et al. 2015,1 kg tuna,Dry weight,Tuna,Atlantic ocean,LU (m2),0,70.58
+Parker et al. 2015,1 kg tuna,Dry weight,Tuna,Indian ocean,LU (m2),0,70.58
+Parker et al. 2015,1 kg tuna,Dry weight,Tuna,Pacific ocean,LU (m2),0,70.58
+Parker et al. 2015,1 kg tuna,Dry weight,Tuna,Atlantic ocean,EU (MJ),98.12833052,70.58
+Parker et al. 2015,1 kg tuna,Dry weight,Tuna,Indian ocean,EU (MJ),101.2148856,70.58
+Parker et al. 2015,1 kg tuna,Dry weight,Tuna,Pacific ocean,EU (MJ),76.96103156,70.58
+Pechsiri et al 2016,1 kg seaweed,Dry weight,Sugar kelp,No drying-Max scenario,GWP (kg CO2 eq),0.379923232,88.17
+Pechsiri et al 2016,1 kg seaweed,Dry weight,Sugar kelp,No drying-Max scenario,GWP (kg CO2 eq),0.310846281,88.17
+Pelletier & Tyedmers 2010,1 kg Tilapia,Dry weight,Tilapia,Lake Indonesia,GWP (kg CO2 eq),18.74136911,78.08
+Pelletier & Tyedmers 2010,1 kg Tilapia,Dry weight,Tilapia,Pond Indonesia,GWP (kg CO2 eq),25.892681,78.08
+Pelletier & Tyedmers 2010,1 kg Tilapia,Dry weight,Tilapia,Lake Indonesia,EU (MJ),221.9372657,78.08
+Pelletier & Tyedmers 2010,1 kg Tilapia,Dry weight,Tilapia,Pond Indonesia,EU (MJ),326.7409746,78.08
+"Salomone et al., 2016",1 kg larvae,Dry weight,Black soldier fly,Municipal waste,GWP (kg CO2 eq),0.99,62.358
+"Salomone et al., 2016",1 kg larvae,Dry weight,Black soldier fly,Municipal waste,EU (MJ),7.248,62.358
+"Salomone et al., 2016",1 kg larvae,Dry weight,Black soldier fly,Municipal waste,LU (m2),0.024,62.358
+"SARF, 2010",1 kg mussels,Dry weight,Mussel,onevalue-suspended mussels,GWP (kg CO2 eq),5.432543769,80.58
+Seghetta et al 2016,1 kg seaweed,Dry weight,Sugar kelp,Including-dryingA3,GWP (kg CO2 eq),0.923076923,88.17
+Seghetta et al 2016,1 kg seaweed,Dry weight,Sugar kelp,Including-dryingA3,EU (MJ),63.46153846,88.17
+Seghetta et al 2017,1 kg seaweed,Dry weight,Sugar kelp,Including-dryingS1,GWP (kg CO2 eq),0.825,88.17
+Seghetta et al 2017,1 kg seaweed,Dry weight,Sugar kelp,Including-dryingS1,EU (MJ),53.13,88.17
+Seghetta et al 2017,1 kg seaweed,Dry weight,Sugar kelp,Including-dryingS1,LU(m2),0,88.17
+"Sills et al., 2013",1 kg microalgae,Dry weight,Chlorella,State of the art,GWP (kg CO2 eq),4.94702,90.67
+"Sills et al., 2013",1 kg microalgae,Dry weight,Chlorella,State of the art,EU (MJ),39.76315789,90.67
+"Sills et al., 2013",1 kg microalgae,Dry weight,Chlorella,Optimistic,GWP (kg CO2 eq),5.719477143,90.67
+"Sills et al., 2013",1 kg microalgae,Dry weight,Chlorella,Optimistic,EU (MJ),52.02712269,90.67
+"Sills et al., 2013",1 kg microalgae,Dry weight,Spirulina,State of the art,GWP (kg CO2 eq),4.931296,90.67
+"Sills et al., 2013",1 kg microalgae,Dry weight,Spirulina,State of the art,EU (MJ),36.40185263,90.67
+"Sills et al., 2013",1 kg microalgae,Dry weight,Spirulina,Optimistic,GWP (kg CO2 eq),5.702377143,90.67
+"Sills et al., 2013",1 kg microalgae,Dry weight,Spirulina,Optimistic,EU (MJ),48.66905263,90.67
+"Smetana et al., 2016",1 kg larvae,Dry weight,Black soldier fly,min-beetpulp,GWP (kg CO2 eq),1.5,62.358
+"Smetana et al., 2016",1 kg larvae,Dry weight,Black soldier fly,min-beetpulp,EU (MJ),24.1,62.358
+"Smetana et al., 2016",1 kg larvae,Dry weight,Black soldier fly,min-beetpulp,LU (m2),0.04,62.358
+"Smetana et al., 2016",1 kg larvae,Dry weight,Black soldier fly,max-municipalwaste,GWP (kg CO2 eq),17.2,62.358
+"Smetana et al., 2016",1 kg larvae,Dry weight,Black soldier fly,max-municipalwaste,EU (MJ),113.2,62.358
+"Smetana et al., 2016",1 kg larvae,Dry weight,Black soldier fly,max-municipalwaste,LU (m2),8,62.358
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Chlorella,Heterotrophic fermenter,GWP (kg CO2 eq),255.3125,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Chlorella,Heterotrophic fermenter,EU (MJ),226.1458333,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Chlorella,Heterotrophic fermenter,LU (m2),5,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Chlorella,Open pond,GWP (kg CO2 eq),100.1041667,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Chlorella,Open pond,EU (MJ),4355.520833,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Chlorella,Open pond,LU (m2),1.979166667,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Chlorella,Tubular Bioreactor,GWP (kg CO2 eq),100.1041667,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Chlorella,Tubular Bioreactor,EU (MJ),1579.375,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Chlorella,Tubular Bioreactor,LU (m2),5.625,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Spirulina,Open pond,GWP (kg CO2 eq),204.4791667,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Spirulina,Open pond,EU (MJ),3477.395833,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Spirulina,Open pond,LU (m2),1.770833333,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Spirulina,Tubular Bioreactor,GWP (kg CO2 eq),81.35416667,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Spirulina,Tubular Bioreactor,EU (MJ),1276.666667,90.67
+"Smetana et al., 2018",1 kg microalgae,Dry weight,Spirulina,Tubular Bioreactor,LU (m2),4.479166667,90.67
+"Thevenot et al., 2018",1 kg larvae,Dry weight,Mealworm,"from fresh larvae-Cereals,meal,bran,beetpulp",GWP (kg CO2 eq),2.664155005,62.35
+"Thevenot et al., 2018",1 kg larvae,Dry weight,Mealworm,"from fresh larvae-Cereals,meal,bran,beetpulp",EU (MJ),65.39289559,62.35
+"Thevenot et al., 2018",1 kg larvae,Dry weight,Mealworm,"from fresh larvae-Cereals,meal,bran,beetpulp",LU (m2),4.305705059,62.35
+Tuomisto & De Matos (2011),1 kg of cultured meat,Dry weight,Cultured meat,CyanobacteriaAllocation 100%Thailand,GWP (kg CO2 eq),6.248294679,63.35
+Tuomisto & De Matos (2011),1 kg of cultured meat,Dry weight,Cultured meat,CyanobacteriaAllocation 100%California,GWP (kg CO2 eq),7.036834925,63.35
+Tuomisto & De Matos (2011),1 kg of cultured meat,Dry weight,Cultured meat,CyanobacteriaAllocation 100%Spain,GWP (kg CO2 eq),6.302864939,63.35
+Tuomisto & De Matos (2011),1 kg of cultured meat,Dry weight,Cultured meat,CyanobacteriaAllocation 100%Thailand,EU (MJ),85.12960437,63.35
+Tuomisto & De Matos (2011),1 kg of cultured meat,Dry weight,Cultured meat,CyanobacteriaAllocation 100%California,EU (MJ),101.5006821,63.35
+Tuomisto & De Matos (2011),1 kg of cultured meat,Dry weight,Cultured meat,CyanobacteriaAllocation 100%Spain,EU (MJ),103.6834925,63.35
+Tuomisto & De Matos (2011),1 kg of cultured meat,Dry weight,Cultured meat,CyanobacteriaBaselineThailand,LU (m2),0.51568895,63.35
+Tuomisto & De Matos (2011),1 kg of cultured meat,Dry weight,Cultured meat,CyanobacteriaBaselineCalifornia,LU (m2),0.633015007,63.35
+Tuomisto & De Matos (2011),1 kg of cultured meat,Dry weight,Cultured meat,CyanobacteriaBaselineSpain,LU (m2),0.613915416,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Cyanobacteria best,GWP (kg CO2 eq),6.188267394,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Wheat best,GWP (kg CO2 eq),8.911323329,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Corn best,GWP (kg CO2 eq),8.070941337,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Cyanobacteria worst,GWP (kg CO2 eq),9.225102319,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Wheat worst,GWP (kg CO2 eq),11.94815825,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Corn worst,GWP (kg CO2 eq),11.10777626,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Cyanobacteria best,EU (MJ),105.5934516,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Wheat best,EU (MJ),96.8622101,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Corn best,EU (MJ),94.13369714,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Cyanobacteria worst,EU (MJ),166.1664393,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Wheat worst,EU (MJ),157.4351978,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Corn worst,EU (MJ),154.7066849,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Cyanobacteria best,LU (m2),1.206002729,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Wheat best,LU (m2),0.712414734,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Corn best,LU (m2),2.109686221,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Cyanobacteria worst,LU (m2),1.207639836,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Wheat worst,LU (m2),0.712414734,63.35
+Tuomisto et al. (2014),1 kg of cultured meat,Dry weight,Cultured meat,Corn worst,LU (m2),2.109686221,63.35
+Van Oirschot et al 2017,1 kg seaweed,Dry weight,Sugar kelp,Incluying drying max,GWP (kg CO2 eq),1.91558,88.17
+Van Oirschot et al 2017,1 kg seaweed,Dry weight,Sugar kelp,Incluying drying min,GWP (kg CO2 eq),1.89712,88.17
+"Van Zanten et al., 2015",1 kg larvae,Dry weight,Housefly,"Total larvae meal, food waste and chicken manure",GWP (kg CO2 eq),0.88,75.25
+"Van Zanten et al., 2015",1 kg larvae,Dry weight,Housefly,"Total larvae meal, food waste and chicken manure",EU (MJ),10.6,75.25
+"Van Zanten et al., 2015",1 kg larvae,Dry weight,Housefly,"Total larvae meal, food waste and chicken manure",LU (m2),0.03,75.25
+"Van Zanten et al., 2015",1 kg larvae,Dry weight,Housefly,"Total larvae meal + heat drying, food waste and chicken manure",GWP (kg CO2 eq),2.29,75.25
+"Van Zanten et al., 2015",1 kg larvae,Dry weight,Housefly,"Total larvae meal + heat drying, food waste and chicken manure",EU (MJ),37.82,75.25
+"Van Zanten et al., 2015",1 kg larvae,Dry weight,Housefly,"Total larvae meal + heat drying, food waste and chicken manure",LU (m2),0.04,75.25
+Winther et al. 2009,1 kg mussels,Dry weight,Mussel,onevolue-uknown,GWP (kg CO2 eq),3.671043598,80.58

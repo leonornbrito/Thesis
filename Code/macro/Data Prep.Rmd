@@ -1,0 +1,211 @@
+---
+title: "Data Prep"
+author: "Leonor Brito"
+date: "2024-02-20"
+output: pdf_document
+---
+
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(purrr)
+
+```
+
+
+```{r}
+
+setwd('/Users/leonorbrito/Documents/Master/Thesis/Datasets/nue')
+
+```
+
+# Import dataframes
+```{r}
+
+crop_nutrient_balance <- read.csv('Environment_Cropland_nutrient_budget_E_All_Data.csv')
+land_use <- read.csv('Inputs_LandUse_E_All_Data.csv')
+land_cover <- read.csv('Environment_LandCover_E_All_Data.csv')
+#fertilizer_use <- read.csv('Inputs_FertilizersNutrient_E_All_Data.csv')
+pesticide_use <- read.csv('Inputs_Pesticides_Use_E_All_Data.csv')
+temp_change <- read.csv('Environment_Temperature_change_E_All_Data.csv', fileEncoding = "ISO-8859-1")
+employment <- read.csv('Employment_Indicators_Agriculture_E_All_Data.csv')
+#gdp <- read.csv()
+
+```
+
+# Data Clean and Prep
+
+## Remove unwanted year columns from all datasets
+```{r}
+
+remove_year_FN_columns <- function(df) {
+  # Identify columns that end with 'F' or 'N' following a year (assumes year is four digits)
+  pattern <- "Y[0-9]{4}[FN]$"
+  columns_to_remove <- grep(pattern, names(df), value = TRUE)
+  
+  # Remove the identified columns from the dataframe
+  df <- df[, !names(df) %in% columns_to_remove]
+}
+
+land_cover <- remove_year_FN_columns(land_cover)
+land_use <- remove_year_FN_columns(land_use)
+employment <- remove_year_FN_columns(employment)
+pesticide_use <- remove_year_FN_columns(pesticide_use)
+temp_change <- remove_year_FN_columns(temp_change)
+crop_nutrient_balance <- remove_year_FN_columns(crop_nutrient_balance)
+
+```
+
+## Function to check for NAs
+```{r}
+
+calculate_na_sums <- function(dataframe, variable_column) {
+  # Identify year columns based on a naming convention (e.g., starting with 'Y_')
+  year_columns <- grep("^Y", names(dataframe), value = TRUE)
+  
+  # Function to calculate sum of NAs for a given variable value within the specified year columns
+  sum_nas_by_variable <- function(variable_value) {
+    subset_df <- subset(dataframe, dataframe[[variable_column]] == variable_value)
+    # Use lapply to handle NA counting, then unlist to ensure the result is a numeric vector
+    na_counts <- unlist(lapply(subset_df[year_columns], function(x) sum(is.na(x))))
+    sum_na <- sum(na_counts)
+    return(sum_na)
+  }
+  
+  # Get unique variable values from the specified variable column
+  variables <- unique(dataframe[[variable_column]])
+  
+  # Calculate the sum of NAs for each variable value
+  na_sums <- sapply(variables, sum_nas_by_variable)
+  
+  # Name the result vector for clarity
+  names(na_sums) <- variables
+  
+  return(na_sums)
+}
+
+```
+
+### Land Cover
+
+```{r}
+
+calculate_na_sums(land_cover, "Element")
+
+```
+
+```{r}
+
+# Identify rows for "Area from CCI_LC" with NAs in any of the year columns
+cci_lc_rows <- land_cover$Element == "Area from CCI_LC"
+year_columns <- grep("^Y", names(land_cover), value = TRUE)
+na_indices_cci_lc <- which(cci_lc_rows & rowSums(is.na(land_cover[year_columns])) > 0)
+
+# Initialize a list to store results
+data_points_in_others <- list()
+
+# Loop through each element value excluding "Area from CCI_LC"
+unique_elements <- unique(land_cover$Element[land_cover$Element != "Area from CCI_LC"])
+for(elem in unique_elements) {
+  # For each element, check corresponding rows in year columns for non-NA where CCI_LC has NA
+  elem_rows <- land_cover$Element == elem
+  # Subset land_cover for this element and year columns, then check for NAs
+  elem_data <- land_cover[elem_rows, year_columns]
+  
+  # Count how many of the NA indices for CCI_LC have non-NA values for this element
+  non_na_counts <- sapply(na_indices_cci_lc, function(index) {
+    sum(!is.na(elem_data[index, ]))
+  })
+  
+  # Sum to get total non-NA counts for this element where CCI_LC has NA
+  total_non_na_for_elem <- sum(non_na_counts)
+  
+  # Store in the list with the element name as the key
+  data_points_in_others[[elem]] <- total_non_na_for_elem
+}
+
+# Print the list to see the counts
+print(data_points_in_others)
+
+
+```
+
+```{r}
+
+# Convert year columns to long format
+land_cover_long <- pivot_longer(land_cover, 
+                                cols = starts_with("Y"), 
+                                names_to = "Year", 
+                                names_prefix = "Y",
+                                values_to = "Value",
+                                values_drop_na = TRUE)
+
+# Extract the actual year number from the 'Year' column
+land_cover_long$Year <- as.numeric(gsub("Y", "", land_cover_long$Year))
+
+# Create a ranking for Element based on your priority
+element_priority <- c("Area from CCI_LC", "Area from MODIS", "Area from CGLS", "Area from WorldCover")
+land_cover_long <- land_cover_long %>%
+  mutate(ElementPriority = match(Element, element_priority))
+
+# For each country, item, and year, select the row with the minimum priority (i.e., highest on your priority list) that is not NA
+land_cover_combined <- land_cover_long %>%
+  group_by(Area, Item, Year) %>%
+  arrange(ElementPriority) %>%
+  filter(!is.na(Value)) %>%
+  slice(1) %>%
+  ungroup()
+
+# Drop the ElementPriority column as it's no longer needed
+land_cover_combined <- land_cover_combined %>%
+  select(-ElementPriority, -Item.Code)
+
+#Pivot Item to wide format
+land_cover_final <- land_cover_combined %>%
+  pivot_wider(names_from = Item, values_from = Value)
+
+```
+
+
+### Land Use
+
+```{r}
+
+# Define the combinations of interest
+combinations_of_interest <- data.frame(
+  Item = c("Agricultural land", "Cropland", "Arable land", "Permanent crops", 
+           "Land area equipped for irrigation", "Land area actually irrigated", 
+           "Agriculture area under organic agric.", "Forest land"),
+  Element = c("Share in Land area", "Share in Agricultural land", "Share in Agricultural land", 
+              "Share in Agricultural land", "Share in Cropland", 
+              "Area", 
+              "Share in Agricultural land", "Share in Land area")
+)
+
+# Filter the land_use dataframe to keep only the rows that match the combinations of interest
+filtered_land_use <- land_use %>%
+  semi_join(combinations_of_interest, by = c("Item", "Element"))
+
+# Get unique countries from the land_use data
+unique_countries <- unique(land_use$Area)
+
+# For each item-element combination, calculate how many countries it's missing from
+missing_combinations_count <- combinations_of_interest %>%
+  rowwise() %>%
+  mutate(MissingInCountriesCount = length(unique_countries) - 
+         sum(land_use$Item == Item & land_use$Element == Element)) %>%
+  ungroup()
+
+# View the result
+print(missing_combinations_count)
+
+```
+Remove "Land area actually irrigated"
+```{r}
+
+filtered_land_use <- filtered_land_use %>%
+  filter(Item != "Land area actually irrigated")
+
+```
+
