@@ -5,18 +5,17 @@ date: "2024-02-20"
 output: pdf_document
 ---
 
+```{r setup}
+
+knitr::opts_knit$set(root.dir = "/Users/leonorbrito/Documents/Master/Thesis/Datasets/macro")
+
+```
+
 ```{r}
 
 library(dplyr)
 library(tidyr)
 library(purrr)
-
-```
-
-
-```{r}
-
-setwd('/Users/leonorbrito/Documents/Master/Thesis/Datasets/nue')
 
 ```
 
@@ -208,4 +207,114 @@ filtered_land_use <- filtered_land_use %>%
   filter(Item != "Land area actually irrigated")
 
 ```
+Concatenate Element and Item to make one variable column
+```{r}
 
+filtered_land_use <- filtered_land_use %>%
+  mutate(combined = paste(Item, Element, sep = ", "))
+
+# Remove unwanted columns
+filtered_land_use <- filtered_land_use %>%
+  select(-c(Item.Code, Item, Element.Code, Element))
+
+```
+Convert variable to wide format, years to long format
+```{r}
+
+# Pivot years columns to long format
+land_use_long <- filtered_land_use %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Value"
+  )
+
+# Pivot the 'combined' column to wide format
+land_use_final <- land_use_long %>%
+  pivot_wider(
+    names_from = combined,
+    values_from = Value
+  )
+
+```
+
+## Pesticide Use
+
+```{r}
+
+pesticide_use_filtered <- pesticide_use %>%
+  filter(Item == "Pesticides (total)" & Element == "Use per area of cropland")
+
+# concatenate Item and Element to create a new variable
+pesticide_use_filtered <- pesticide_use_filtered %>%
+  mutate(combined = paste(Item, Element, sep = ", "))
+
+# remove unwanted columns
+pesticide_use_filtered <- pesticide_use_filtered %>%
+  select(-c(Item.Code, Item, Element.Code, Element))
+
+```
+
+Convert variable to wide format, years to long format
+```{r}
+
+# Pivot years columns to long format
+pesticide_use_long <- pesticide_use_filtered %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Value"
+  )
+
+# Pivot the 'combined' column to wide format
+pesticide_use_final <- pesticide_use_long %>%
+  pivot_wider(
+    names_from = combined,
+    values_from = Value
+  )
+
+```
+
+## Temp Change
+
+```{r}
+
+temp_change_filtered <- temp_change %>%
+  filter(Months == "Meteorological year")
+
+```
+
+Convert variable to wide format, years to long format
+```{r}
+
+# Pivot years columns to long format
+temp_change_long <- temp_change_filtered %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Value"
+  )
+
+# Pivot the 'combined' column to wide format
+temp_change_final <- temp_change_long %>%
+  pivot_wider(
+    names_from = Element,
+    values_from = Value
+  )
+
+```
+
+
+## Crop Nutrient Balance
+
+```{r}
+
+# Assuming your dataset is named crop_nutrient_balance
+filtered_crop_nutrient_balance <- crop_nutrient_balance %>%
+  filter((Item == "Input" & Element %in% c("Cropland nitrogen", "Cropland phosphorus", "Cropland potassium")) |
+    (Item == "Outputs" & Element %in% c("Cropland nitrogen", "Cropland phosphorus", "Cropland potassium"))|
+    (Item == "Nutrient balance" & Element %in% c("Cropland nitrogen", "Cropland phosphorus", "Cropland potassium",
+                                                 "Cropland nitrogen use efficiency", "Cropland phosphorus use efficiency", 
+                                                 "Cropland potassium use efficiency")))
+
+```
