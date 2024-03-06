@@ -1,0 +1,126 @@
+---
+title: "Missing Data"
+author: "Leonor Brito"
+date: "2024-03-05"
+output: pdf_document
+---
+
+```{r}
+
+library(ggplot2)
+library(reshape2)
+library(countrycode)
+
+```
+
+
+```{r}
+
+vars_missing <- function(data){
+  
+  # Calculate the total number of entries per group for denominator
+  total_entries <- data %>%
+    group_by(Year, variable) %>%
+    summarise(Total = n()) %>%
+    ungroup()
+  
+  # Calculate the number of missing values per group
+  missing_entries <- data %>%
+    group_by(Year, variable) %>%
+    summarise(Missing = sum(is.na(value))) %>%
+    ungroup()
+  
+  # Join the dataframes to calculate the percentage
+  missing_percentage <- total_entries %>%
+    left_join(missing_entries, by = c("Year", "variable")) %>%
+    mutate(PercentMissing = (Missing / Total) * 100)
+  
+  # Now, plotting the heatmap for percentage of missing values
+  ggplot(missing_percentage, aes(x = Year, y = variable, fill = PercentMissing)) +
+    geom_tile() +
+    scale_fill_gradient(low = "white", high = "red", name = "% Missing") +
+    labs(x = "Year", 
+         y = "Variable", 
+         title = "Heatmap of % Missing Values per Variable and Year") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+}
+
+```
+
+```{r}
+
+# Melting the data frame so that 'Year' becomes a variable and all variables become values
+long_data <- reshape2::melt(combined_final, id.vars = c('Area.Code', 'Area', 'Year'))
+# Plot % missing of each variable by year 
+vars_missing(long_data)
+
+# filtering for > year 2000
+long_data_2000_onwards <- long_data %>%
+  filter(as.numeric(Year) >= 2000)
+# Plot % missing of each variable by year after 2000
+vars_missing(long_data_2000_onwards)
+
+```
+
+Removing some variables
+```{r}
+
+long_data_2000_onwards <- long_data_2000_onwards %>%
+  filter(variable != "mult.crops" 
+         & variable != "coast.water" 
+         & variable != "org.land.al"
+         & variable != "k.fert.prod"
+         & variable != "p.fert.prod"
+         & variable != "n.fert.prod"
+         & variable != "k.fert.ratio"
+         & variable != "p.fert.ratio"
+         & variable != "n.fert.ratio")
+
+```
+
+```{r}
+
+# Calculate the percentage of missing data for each variable for each country
+percent_missing_by_country_variable <- long_data_2000_onwards %>%
+  group_by(Area, variable) %>%
+  summarise(TotalYears = n(),  # Total number of years observed
+            MissingYears = sum(is.na(value)),  # Count of years with missing data
+            PercentMissing = (MissingYears / TotalYears) * 100) %>%
+  ungroup()
+
+# Step 1 & 2: Identify countries with max percent missing less than 5% for all variables
+countries_with_less_than_5perc_missing <- percent_missing_by_country_variable %>%
+  group_by(Area) %>%
+  summarise(MaxPercentMissing = max(PercentMissing)) %>%
+  filter(MaxPercentMissing < 5) %>%
+  ungroup()
+
+# Step 3: Join back to the original data to filter only those countries
+percent_missing_filtered_countries <- percent_missing_by_country_variable %>%
+  semi_join(countries_with_less_than_5perc_missing, by = "Area")
+
+print(paste("Countries with less 5% missing for all variables since 2020 (22 years): ", length(unique(percent_missing_filtered_countries$Area))))
+
+```
+
+```{r}
+
+unique_countries <- unique(percent_missing_filtered_countries$Area)
+
+# Convert country names to continent names
+continents <- countrycode(unique_countries, "country.name", "continent")
+
+# Create a data frame of the countries and their continents
+countries_continents <- data.frame(Country = unique_countries, Continent = continents)
+
+# Count the number of countries per continent
+countries_per_continent <- countries_continents %>%
+  group_by(Continent) %>%
+  summarise(NumberOfCountries = n())
+
+# Print the number of countries per continent
+print(countries_per_continent)
+
+```
+
