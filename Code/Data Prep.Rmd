@@ -1,0 +1,519 @@
+---
+title: "Data Prep"
+author: "Leonor Brito"
+date: "2024-02-20"
+output: pdf_document
+---
+
+```{r setup}
+
+knitr::opts_knit$set(root.dir = "/Users/leonorbrito/Documents/Master/Thesis/Datasets/macro")
+
+```
+
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(purrr)
+
+```
+
+# Import dataframes
+```{r}
+
+crop_nutrient_balance <- read.csv('Environment_Cropland_nutrient_budget_E_All_Data.csv')
+land_use <- read.csv('Inputs_LandUse_E_All_Data.csv')
+land_cover <- read.csv('Environment_LandCover_E_All_Data.csv')
+fertilizer_use <- read.csv('Inputs_FertilizersNutrient_E_All_Data.csv')
+pesticide_use <- read.csv('Inputs_Pesticides_Use_E_All_Data.csv')
+temp_change <- read.csv('Environment_Temperature_change_E_All_Data.csv', fileEncoding = "ISO-8859-1")
+employment <- read.csv('Employment_Indicators_Agriculture_E_All_Data.csv')
+fertilizer_product <- read.csv('Inputs_FertilizersProduct_E_All_Data.csv')
+manure <- read.csv('Environment_LivestockManure_E_All_Data.csv')
+
+```
+
+# Data Clean and Prep
+
+## Remove unwanted year columns from all datasets
+```{r}
+
+remove_year_FN_columns <- function(df) {
+  # Identify columns that end with 'F' or 'N' following a year (assumes year is four digits)
+  pattern <- "Y[0-9]{4}[FN]$"
+  columns_to_remove <- grep(pattern, names(df), value = TRUE)
+  
+  # Remove the identified columns from the dataframe
+  df <- df[, !names(df) %in% columns_to_remove]
+}
+
+land_cover <- remove_year_FN_columns(land_cover)
+land_use <- remove_year_FN_columns(land_use)
+employment <- remove_year_FN_columns(employment)
+pesticide_use <- remove_year_FN_columns(pesticide_use)
+temp_change <- remove_year_FN_columns(temp_change)
+crop_nutrient_balance <- remove_year_FN_columns(crop_nutrient_balance)
+manure <- remove_year_FN_columns(manure)
+fertilizer_product <- remove_year_FN_columns(fertilizer_product)
+fertilizer_use <- remove_year_FN_columns(fertilizer_use)
+
+```
+
+## Function to check for NAs
+```{r}
+
+calculate_na_sums <- function(dataframe, variable_column) {
+  # Identify year columns based on a naming convention (e.g., starting with 'Y_')
+  year_columns <- grep("^Y", names(dataframe), value = TRUE)
+  
+  # Function to calculate sum of NAs for a given variable value within the specified year columns
+  sum_nas_by_variable <- function(variable_value) {
+    subset_df <- subset(dataframe, dataframe[[variable_column]] == variable_value)
+    # Use lapply to handle NA counting, then unlist to ensure the result is a numeric vector
+    na_counts <- unlist(lapply(subset_df[year_columns], function(x) sum(is.na(x))))
+    sum_na <- sum(na_counts)
+    return(sum_na)
+  }
+  
+  # Get unique variable values from the specified variable column
+  variables <- unique(dataframe[[variable_column]])
+  
+  # Calculate the sum of NAs for each variable value
+  na_sums <- sapply(variables, sum_nas_by_variable)
+  
+  # Name the result vector for clarity
+  names(na_sums) <- variables
+  
+  return(na_sums)
+}
+
+```
+
+### Land Cover
+
+```{r}
+
+calculate_na_sums(land_cover, "Element")
+
+```
+
+```{r}
+
+# Identify rows for "Area from CCI_LC" with NAs in any of the year columns
+cci_lc_rows <- land_cover$Element == "Area from CCI_LC"
+year_columns <- grep("^Y", names(land_cover), value = TRUE)
+na_indices_cci_lc <- which(cci_lc_rows & rowSums(is.na(land_cover[year_columns])) > 0)
+
+# Initialize a list to store results
+data_points_in_others <- list()
+
+# Loop through each element value excluding "Area from CCI_LC"
+unique_elements <- unique(land_cover$Element[land_cover$Element != "Area from CCI_LC"])
+for(elem in unique_elements) {
+  # For each element, check corresponding rows in year columns for non-NA where CCI_LC has NA
+  elem_rows <- land_cover$Element == elem
+  # Subset land_cover for this element and year columns, then check for NAs
+  elem_data <- land_cover[elem_rows, year_columns]
+  
+  # Count how many of the NA indices for CCI_LC have non-NA values for this element
+  non_na_counts <- sapply(na_indices_cci_lc, function(index) {
+    sum(!is.na(elem_data[index, ]))
+  })
+  
+  # Sum to get total non-NA counts for this element where CCI_LC has NA
+  total_non_na_for_elem <- sum(non_na_counts)
+  
+  # Store in the list with the element name as the key
+  data_points_in_others[[elem]] <- total_non_na_for_elem
+}
+
+# Print the list to see the counts
+print(data_points_in_others)
+
+
+```
+
+```{r}
+
+# Step 1: Convert the dataset to long format including the Year columns
+land_cover_long <- land_cover %>%
+  pivot_longer(cols = starts_with("Y"), 
+               names_to = "Year", 
+               values_to = "Value",
+               names_prefix = "Y") %>%
+  mutate(Year = as.numeric(Year)) # Ensure Year is numeric
+
+# Step 2: Group by Area, Item, and Year to calculate the average across Elements
+# Note that we assume 'Element' is also a column in your dataset
+land_cover_avg <- land_cover_long %>%
+  group_by(Area.Code, Area, Item, Year) %>%
+  summarise(Average_Value = mean(Value, na.rm = TRUE), .groups = 'drop')
+
+# Step 3: Spread the Item column to wide format
+land_cover_final <- land_cover_avg %>%
+  pivot_wider(names_from = Item, 
+              values_from = Average_Value)
+
+```
+
+### Land Use
+
+```{r}
+
+# Define the combinations of interest
+combinations_of_interest <- data.frame(
+  Item = c("Agricultural land", "Cropland", "Arable land", "Permanent crops", 
+           "Land area equipped for irrigation", "Land area actually irrigated", 
+           "Agriculture area under organic agric.", "Forest land"),
+  Element = c("Share in Land area", "Share in Agricultural land", "Share in Agricultural land", 
+              "Share in Agricultural land", "Share in Cropland", 
+              "Area", 
+              "Share in Agricultural land", "Share in Land area")
+)
+
+# Filter the land_use dataframe to keep only the rows that match the combinations of interest
+filtered_land_use <- land_use %>%
+  semi_join(combinations_of_interest, by = c("Item", "Element"))
+
+# Get unique countries from the land_use data
+unique_countries <- unique(land_use$Area)
+
+# For each item-element combination, calculate how many countries it's missing from
+missing_combinations_count <- combinations_of_interest %>%
+  rowwise() %>%
+  mutate(MissingInCountriesCount = length(unique_countries) - 
+         sum(land_use$Item == Item & land_use$Element == Element)) %>%
+  ungroup()
+
+# View the result
+print(missing_combinations_count)
+
+```
+Remove "Land area actually irrigated"
+```{r}
+
+filtered_land_use <- filtered_land_use %>%
+  filter(Item != "Land area actually irrigated")
+
+```
+Concatenate Element and Item to make one variable column
+```{r}
+
+filtered_land_use <- filtered_land_use %>%
+  mutate(combined = paste(Item, Element, sep = ", "))
+
+# Remove unwanted columns
+filtered_land_use <- filtered_land_use %>%
+  select(-c(Item.Code, Item, Element.Code, Element, Area.Code..M49., Unit))
+
+```
+Convert variable to wide format, years to long format
+```{r}
+
+# Pivot years columns to long format
+land_use_long <- filtered_land_use %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Value"
+  )
+
+# Pivot the 'combined' column to wide format
+land_use_final <- land_use_long %>%
+  pivot_wider(
+    names_from = combined,
+    values_from = Value
+  )
+
+```
+
+### Pesticide Use
+
+```{r}
+
+pesticide_use_filtered <- pesticide_use %>%
+  filter(Item == "Pesticides (total)" & Element == "Use per area of cropland")
+
+# concatenate Item and Element to create a new variable
+pesticide_use_filtered <- pesticide_use_filtered %>%
+  mutate(combined = paste(Item, Element, sep = ", "))
+
+# remove unwanted columns
+pesticide_use_filtered <- pesticide_use_filtered %>%
+  select(-c(Item.Code, Item, Element.Code, Element, Area.Code..M49., Unit))
+
+```
+
+Convert variable to wide format, years to long format
+```{r}
+
+# Pivot years columns to long format
+pesticide_use_long <- pesticide_use_filtered %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Value"
+  )
+
+# Pivot the 'combined' column to wide format
+pesticide_use_final <- pesticide_use_long %>%
+  pivot_wider(
+    names_from = combined,
+    values_from = Value
+  )
+
+```
+
+### Temp Change
+
+```{r}
+
+temp_change_filtered <- temp_change %>%
+  filter(Months == "Meteorological year", Element == "Temperature change")
+
+```
+
+Convert variable to wide format, years to long format
+```{r}
+
+# Pivot years columns to long format
+temp_change_long <- temp_change_filtered %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Value"
+  )
+
+# Pivot the 'combined' column to wide format
+temp_change_final <- temp_change_long %>%
+  pivot_wider(
+    names_from = Element,
+    values_from = Value
+  )
+
+
+names(temp_change_final)[names(temp_change_final) == "Temperature change"] <- "Temperature change (C)"
+
+# remove unwanted columns
+temp_change_final <- temp_change_final %>%
+  select(-c(Area.Code..M49., Months.Code, Months, Element.Code, Unit))
+
+```
+
+
+### Crop Nutrient Balance
+
+```{r}
+
+# Filter the crop_nutrient_balance dataset for nue Element values
+filtered_nue <- subset(crop_nutrient_balance, Element %in% c("Cropland nitrogen use efficiency", 
+                                                            "Cropland phosphorus use efficiency", 
+                                                            "Cropland potassium use efficiency"))
+
+# Pivot years columns to long format
+nue_long <- filtered_nue %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Value"
+  )
+
+# Pivot the 'combined' column to wide format
+nue_final <- nue_long %>%
+  pivot_wider(
+    id_cols = c(Area.Code, Area, Year),
+    names_from = Element,
+    values_from = Value
+  )
+
+
+```
+
+### Manure Management
+
+```{r}
+
+# Filter the crop_nutrient_balance dataset for nue Element values
+filtered_manure <- subset(manure, Element %in% c("Stocks", "Amount excreted in manure (N content)", "Manure left on pasture (N content)"))
+
+# Pivot years columns to long format
+manure_long <- filtered_manure %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Value"
+  )
+
+# Pivot the 'combined' column to wide format
+manure_wide <- manure_long %>%
+  pivot_wider(
+    id_cols = c(Area.Code, Area, Item, Year),
+    names_from = Element,
+    values_from = Value
+  )
+
+
+# Calculate averages and remove the "Item" column
+manure_final <- manure_wide %>%
+  group_by(Area.Code, Area, Year) %>%
+  summarise(
+    Avg_Stocks = mean(`Stocks`, na.rm = TRUE),
+    Avg_Amount_Excreted = sum(`Amount excreted in manure (N content)`, na.rm = TRUE),
+    Avg_Manure_Left_On_Pasture = sum(`Manure left on pasture (N content)`, na.rm = TRUE)
+  ) %>%
+  ungroup()  # Optional, to remove the grouping structure
+
+
+```
+
+### Fertilizer Management
+
+```{r}
+
+# Filter the crop_nutrient_balance dataset for nue Element values
+filtered_fertilizer <- subset(fertilizer_use, Element %in% c("Production", "Import Quantity", "Export Quantity"))
+
+filtered_fertilizer$combined <- paste(filtered_fertilizer$Item, filtered_fertilizer$Element, sep = ", ")
+
+
+# Pivot years columns to long format
+fertilizer_long <- filtered_fertilizer %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Value"
+  )
+
+# Pivot the 'combined' column to wide format
+fertilizer_final <- fertilizer_long %>%
+  pivot_wider(
+    id_cols = c(Area.Code, Area, Year),
+    names_from = combined,
+    values_from = Value
+  )
+
+# Create import/export ratio variable
+fertilizer_final$N.ImportExport.Ratio <- fertilizer_final[["Nutrient nitrogen N (total), Import Quantity"]] / fertilizer_final[["Nutrient nitrogen N (total), Export Quantity" ]]
+fertilizer_final$P.ImportExport.Ratio <- fertilizer_final[["Nutrient phosphate P2O5 (total), Import Quantity"]] / fertilizer_final[["Nutrient phosphate P2O5 (total), Export Quantity"]]
+fertilizer_final$K.ImportExport.Ratio <- fertilizer_final[["Nutrient potash K2O (total), Import Quantity"]] / fertilizer_final[["Nutrient potash K2O (total), Export Quantity"]]
+
+fertilizer_final <- fertilizer_final %>%
+  select(-c(5, 6, 8, 9, 11, 12))
+
+```
+
+
+# Combine all datasets
+
+```{r}
+
+# Function to convert Year column: remove "Y" prefix and convert to numeric
+convert_year <- function(df) {
+  df %>%
+    mutate(Year = as.numeric(sub("Y", "", Year))) %>%
+    return()
+}
+
+# Apply the function to each dataset
+fertilizer_final <- convert_year(fertilizer_final)
+land_cover_final <- convert_year(land_cover_final)
+land_use_final <- convert_year(land_use_final)
+manure_final <- convert_year(manure_final)
+nue_final <- convert_year(nue_final)
+pesticide_use_final <- convert_year(pesticide_use_final)
+temp_change_final <- convert_year(temp_change_final)
+
+
+# Now, perform the full joins
+combined_final <- fertilizer_final %>%
+  full_join(land_cover_final, by = c("Area.Code", "Area", "Year")) %>%
+  full_join(land_use_final, by = c("Area.Code", "Area", "Year")) %>%
+  full_join(manure_final, by = c("Area.Code", "Area", "Year")) %>%
+  full_join(nue_final, by = c("Area.Code", "Area", "Year")) %>%
+  full_join(pesticide_use_final, by = c("Area.Code", "Area", "Year")) %>%
+  full_join(temp_change_final, by = c("Area.Code", "Area", "Year"))
+
+
+# Standardize variable column names
+year_col_pos <- which(names(combined_final) == "Year")
+names(combined_final)[(year_col_pos+1):ncol(combined_final)] <- variable_names
+
+```
+
+
+```{r}
+
+# Define the variable names
+variable_names <- c(
+  "n.fert.prod", "p.fert.prod", "k.fert.prod", 
+  "n.fert.ratio", "p.fert.ratio", "k.fert.ratio",
+  "artif.surf", "coast.water", "grassland", 
+  "herb.crops", "inl.water", "magroves", 
+  "mult.crops", "snow.areas", "shrub.areas", 
+  "flood.areas", "veg.areas", "barren.land", 
+  "tree.cover", "woordy.crops", "ag.land.la", 
+  "cropland.al", "arable.land.al", "perm.crops.al", 
+  "forest.land.al", "irrig.land.cl", "org.land.al", 
+  "manure.stocks", "manure.exc", "manure.left", 
+  "nue", "pue", "kue", "pest.cl", "temp.change"
+)
+
+# Define the descriptions
+descriptions <- c(
+  "Nutrient nitrogen N (total), Production", "Nutrient phosphate P2O5 (total), Production", "Nutrient potash K2O (total), Production",
+  "Nutrient nitrogen N, Import/Export Ratio", "Nutrient phosphate P2O5 (total), Import/Export Ratio", "Nutrient potash K2O (total), Import/Export Ratio",
+  "Artificial surfaces (including urban and associated areas)", "Coastal water bodies and intertidal areas", "Grassland",
+  "Herbaceous crops", "Inland water bodies", "Mangroves",
+  "Multiple or layered crops", "Permanent snow and glaciers", "Shrub-covered areas",
+  "Shrubs and/or herbaceous vegetation, aquatic or regularly flooded", "Sparsely natural vegetated areas", "Terrestrial barren land",
+  "Tree-covered areas", "Woody crops", "Agricultural land, Share in Land area",
+  "Cropland, Share in Agricultural land", "Arable land, Share in Agricultural land", "Permanent crops, Share in Agricultural land",
+  "Forest land, Share in Land area", "Land area equipped for irrigation, Share in Cropland", "Agriculture area under organic agric., Share in Agricultural land",
+  "Total Manure Stocks", "Amount excreeted in manure (N content)", "Manure left on pasture (N content)",
+  "Cropland nitrogen use efficiency", "Cropland phosphorus use efficiency", "Cropland potassium use efficiency",
+  "Pesticides (total), Use per area of cropland", "Temperature change"
+)
+
+# Define the units
+units <- c(
+  "t", "t", "t", "t/t", "t/t", "t/t", 
+  "1000 ha", "1000 ha", "1000 ha", 
+  "1000 ha", "1000 ha", "1000 ha", 
+  "1000 ha", "1000 ha", "1000 ha", 
+  "1000 ha", "1000 ha", "1000 ha", 
+  "1000 ha", "1000 ha", "%", 
+  "%", "%", "%", 
+  "%", "%", "%", 
+  "An", "kg", "kg", 
+  "%", "%", "%", 
+  "kg/ha", "°c"
+)
+
+# Create the data frame
+variables_table <- data.frame(Variable = variable_names, Description = descriptions, Unit = units)
+
+# Print the data frame
+print(variables_table)
+
+
+```
+
+```{r}
+
+# List of areas to remove
+areas_to_remove <- c(
+    "World", "Africa", "Eastern Africa", "Middle Africa", "Northern Africa", "Southern Africa", "Western Africa",
+    "Americas", "Northern America", "Central America", "Caribbean", "South America",
+    "Asia", "Central Asia", "Eastern Asia", "Southern Asia", "South-eastern Asia", "Western Asia",
+    "Europe", "Eastern Europe", "Northern Europe", "Southern Europe", "Western Europe",
+    "Oceania", "Australia and New Zealand", "Melanesia", "Micronesia", "Polynesia",
+    "European Union (27)", "Least Developed Countries", "Land Locked Developing Countries",
+    "Small Island Developing States", "Low Income Food Deficit Countries", "Net Food Importing Developing Countries"
+)
+
+# Remove rows where the 'Area' is in the list of areas to remove and Year 2022
+combined_final <- combined_final[!combined_final$Area %in% areas_to_remove & combined_final$Year != 2022, ]
+
+```
+
