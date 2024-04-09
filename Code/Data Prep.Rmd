@@ -7,7 +7,7 @@ output: pdf_document
 
 ```{r setup}
 
-knitr::opts_knit$set(root.dir = "/Users/leonorbrito/Documents/Master/Thesis/Datasets/macro")
+knitr::opts_knit$set(root.dir = "/Users/leonorbrito/Documents/Master/Thesis/Datasets/OLD")
 
 ```
 
@@ -16,6 +16,7 @@ knitr::opts_knit$set(root.dir = "/Users/leonorbrito/Documents/Master/Thesis/Data
 library(dplyr)
 library(tidyr)
 library(purrr)
+library(ggplot2)
 
 ```
 
@@ -31,6 +32,8 @@ temp_change <- read.csv('Environment_Temperature_change_E_All_Data.csv', fileEnc
 employment <- read.csv('Employment_Indicators_Agriculture_E_All_Data.csv')
 fertilizer_product <- read.csv('Inputs_FertilizersProduct_E_All_Data.csv')
 manure <- read.csv('Environment_LivestockManure_E_All_Data.csv')
+yield <- read.csv('Production_Crops_Livestock_E_All_Data.csv')
+emissions <- read.csv('Emissions_Totals_E_All_Data_(Normalized).csv')
 
 ```
 
@@ -48,6 +51,10 @@ remove_year_FN_columns <- function(df) {
   df <- df[, !names(df) %in% columns_to_remove]
 }
 
+```
+
+```{r}
+
 land_cover <- remove_year_FN_columns(land_cover)
 land_use <- remove_year_FN_columns(land_use)
 employment <- remove_year_FN_columns(employment)
@@ -57,8 +64,27 @@ crop_nutrient_balance <- remove_year_FN_columns(crop_nutrient_balance)
 manure <- remove_year_FN_columns(manure)
 fertilizer_product <- remove_year_FN_columns(fertilizer_product)
 fertilizer_use <- remove_year_FN_columns(fertilizer_use)
+yield <- remove_year_FN_columns(yield)
 
 ```
+
+## Remove group rows (regions, continents, etc)
+
+```{r}
+
+# List of areas to remove
+areas_to_remove <- c(
+    "World", "Africa", "Eastern Africa", "Middle Africa", "Northern Africa", "Southern Africa", "Western Africa",
+    "Americas", "Northern America", "Central America", "Caribbean", "South America",
+    "Asia", "Central Asia", "Eastern Asia", "Southern Asia", "South-eastern Asia", "Western Asia",
+    "Europe", "Eastern Europe", "Northern Europe", "Southern Europe", "Western Europe",
+    "Oceania", "Australia and New Zealand", "Melanesia", "Micronesia", "Polynesia",
+    "European Union (27)", "Least Developed Countries", "Land Locked Developing Countries",
+    "Small Island Developing States", "Low Income Food Deficit Countries", "Net Food Importing Developing Countries"
+)
+
+```
+
 
 ## Function to check for NAs
 ```{r}
@@ -89,6 +115,9 @@ calculate_na_sums <- function(dataframe, variable_column) {
 }
 
 ```
+
+
+## Independent Vars
 
 ### Land Cover
 
@@ -404,6 +433,239 @@ fertilizer_final <- fertilizer_final %>%
 ```
 
 
+## Depdendent Var
+
+### Crop Yield
+
+```{r}
+
+filtered_yield <- subset(yield, Element %in% c("Yield"))
+
+# Pivot years columns to long format
+yield_long <- filtered_yield %>%
+  pivot_longer(
+    cols = starts_with("Y"),
+    names_to = "Year",
+    values_to = "Yield"
+  )
+
+yield_final <- yield_long[c("Area.Code", "Area", "Item", "Year", "Yield")]
+
+yield_by_region <- yield_final[yield_final$Area %in% areas_to_remove, ]
+yield_by_country <- yield_final[!yield_final$Area %in% areas_to_remove, ]
+
+```
+
+```{r}
+
+calculate_average_yield <- function(data) {
+  # Ensure the Year column is numeric, removing any "Y" prefix
+  data$Year <- as.numeric(sub("Y", "", data$Year))
+  
+  # Convert the Yield column to numeric, setting any NaN values to NA
+  data$Yield <- as.numeric(replace(data$Yield, is.nan(data$Yield), NA))
+  
+  # Calculate the average yield for each Area and Item, filtering for years 2003 to 2021
+  average_yields <- data %>%
+    filter(Year >= 2003 & Year <= 2021) %>%
+    group_by(Area, Item) %>%
+    summarize(AverageYield = mean(Yield, na.rm = TRUE), .groups = 'drop')
+  
+  # Return the average yields dataframe
+  return(average_yields)
+}
+
+avg_yield_country <- calculate_average_yield(yield_by_country)
+avg_yield_region <- calculate_average_yield(yield_by_region)
+
+```
+
+### Food groups
+
+```{r}
+
+# Define vectors for each food group
+fruits_and_berries <- c(
+  "Apples", "Apricots", "Figs", "Grapes", "Oranges",
+  "Peaches and nectarines", "Pears", "Plums and sloes", "Watermelons",
+  "Other citrus fruit, n.e.c.", "Other berries and fruits of the genus vaccinium n.e.c.",
+  "Other fruits, n.e.c.", "Cantaloupes and other melons", "Cherries",
+  "Lemons and limes", "Tangerines, mandarins, clementines", "Strawberries",
+  "Quinces", "Bananas", "Pineapples", "Avocados", "Papayas", "Kiwi fruit",
+  "Blueberries", "Raspberries", "Other tropical fruits, n.e.c.", "Other pome fruits", 
+  "Citrus Fruit, Total", "Fruit Primary", "Dates", "Pomelos and grapefruits", "Currants",
+  "Cranberries", "Sour cherries", "Cocoa beans", "Coffee, green", "Areca nuts")
+
+vegetables <- c(
+  "Potatoes", "Tomatoes", "Cucumbers and gherkins", 
+  "Chillies and peppers, green (Capsicum spp. and Pimenta spp.)",
+  "Green garlic", "Leeks and other alliaceous vegetables", "Lettuce and chicory",
+  "Carrots and turnips", "Cauliflowers and broccoli", "Cabbages", "Artichokes",
+  "Asparagus", "Eggplants (aubergines)", "Okra", "String beans", "Peas, green",
+  "Other beans, green", "Onions and shallots, green", "Other vegetables, fresh n.e.c.", 
+  "Pumpkins, squash and gourds", "Potatoes", "Onions and shallots, dry (excluding dehydrated)",
+  "Other vegetables, fresh n.e.c.", "Cabbages", "Carrots and turnips",
+  "Cauliflowers and broccoli", "Chillies and peppers, green (Capsicum spp. and Pimenta spp.)",
+  "Cucumbers and gherkins", "Eggplants (aubergines)", "Green garlic",
+  "Leeks and other alliaceous vegetables", "Lettuce and chicory", "Okra",
+  "Onions and shallots, green", "Other beans, green", "Peas, green", 
+  "Pumpkins, squash and gourds", "Tomatoes", "Artichokes", 
+  "Chillies and peppers, dry (Capsicum spp., Pimenta spp.), raw", "Spinach","Vetches",
+  "Asparagus", "String beans", "Vegetables Primary")
+
+dairy_and_eggs <- c("Eggs Primary", "Hen eggs in shell, fresh", "Milk, Total", 
+                    "Raw milk of camel", "Raw milk of cattle", "Raw milk of goats", 
+                    "Raw milk of sheep", "Raw milk of buffalo", 
+                    "Eggs from other birds in shell, fresh, n.e.c.")
+
+cereals <- c("Cereals n.e.c.", "Green corn (maize)","Barley", "Maize (corn)", "Millet", "Oats",
+             "Rice", "Rye", "Sorghum", "Wheat", "Cereals, primary", "Triticale", "Buckwheat",
+             "Mixed grain")
+
+pulses_nuts_legumes <- c(
+  "Beans, dry", "Broad beans and horse beans, dry", "Chick peas, dry", "Cow peas, dry",
+  "Lentils, dry", "Peas, dry", "Pigeon peas, dry", "Broad beans and horse beans, green",
+  "Pulses, Total", "Other pulses n.e.c.", "Almonds, in shell", 
+  "Other nuts (excluding wild edible nuts and groundnuts), in shell, n.e.c.",
+  "Walnuts, in shell", "Pistachios, in shell", "Hazelnuts, in shell", "Mustard seed",
+  "Sesame seed", "Sunflower seed", "Linseed", "Treenuts, Total","Other pulses n.e.c.", 
+  "Cashew nuts, in shell", "Chestnuts, in shell", "Other stone fruits","Soya beans", "Lupins",
+  "Safflower seed", "Tung nuts","Bambara beans, dry", "Melonseed", "Poppy seed", "Groundnuts, excluding shelled", "Locust beans (carobs)")
+
+oil_crops <- c(
+  "Olives", "Oilcrops, Cake Equivalent", "Oilcrops, Oil Equivalent", "Rape or colza seed",
+  "Safflower seed", "Castor oil seeds", "Oil palm fruit", "Tung nuts", 
+  "Other oil seeds, n.e.c.",
+  "Oilcrops, Cake Equivalent", "Oilcrops, Oil Equivalent", "Rape or colza seed", 
+  "Castor oil seeds", "Oil palm fruit", "Other oil seeds, n.e.c.")
+
+sugar_crops <- c(
+  "Sugar beet", "Sugar cane", "Sugar Crops Primary","Other sugar crops n.e.c.")
+
+fiber_crops <- c(
+  "Seed cotton, unginned", "Fibre Crops, Fibre Equivalent","Fibre Crops, Fibre Equivalent", "Flax, raw or retted","Other fibre crops, raw, n.e.c.", "Ramie, raw or retted")
+
+roots_tubers <- c("Roots and Tubers, Total", "Sweet potatoes", "Taro", "Yams", 
+                  "Cassava, fresh", 
+                  "Edible roots and tubers with high starch or inulin content, n.e.c., fresh",
+                  "Yautia", "Chicory roots")
+
+spices_aromatics <- c(
+  "Anise, badian, coriander, cumin, caraway, fennel and juniper berries, raw",
+  "Other stimulant, spice and aromatic crops, n.e.c.", "Pepper (Piper spp.), raw",
+  "Nutmeg, mace, cardamoms, raw", "Vanilla, raw", "Cinnamon and cinnamon-tree flowers, raw",
+  "Cloves (whole stems), raw","Ginger, raw", "Peppermint, spearmint")
+
+tropical_other_fruits <- c("Mangoes, guavas and mangosteens", "Other tropical fruits, n.e.c.", 
+                           "Cashewapple", "Coconuts, in shell", "Plantains and cooking bananas")
+
+industrial_crops <- c(
+  "Unmanufactured tobacco", "Hop cones", "Natural rubber in primary forms", "Jute, raw or retted",
+  "Sisal, raw", "Abaca, manila hemp, raw", "Kenaf, and other textile bast fibres, raw or retted",
+  "Ramie, raw or retted", "True hemp, raw or retted", "Mat\xe9 leaves")
+
+miscellaneous <- c("Hempseed", "Persimmons", 
+                   "Gooseberries", "Karite nuts (sheanuts)", "Kola nuts", "Quinoa", 
+                   "Tallowtree seeds", "Agave fibres, raw, n.e.c.", "Cassava leaves",
+                   "Pyrethrum, dried flowers", "Kapok fruit", "Jojoba seeds", "Canary seed", 
+                   "Tea leaves", "Fonio", "Beeswax")
+
+animal_products <- c("Raw hides and skins of cattle", "Raw hides and skins of goats or kids", 
+                     "Raw hides and skins of sheep or lambs", 
+                     "Raw hides and skins of buffaloes")
+
+# Combine vectors into a data frame for mapping
+food_group_mapping <- data.frame(
+  Item = c(fruits_and_berries, vegetables, dairy_and_eggs, cereals, pulses_nuts_legumes,
+           oil_crops, sugar_crops, fiber_crops, roots_tubers, spices_aromatics, 
+           tropical_other_fruits, industrial_crops, miscellaneous, animal_products),
+  FoodGroup = c(rep("Fruits and Berries", length(fruits_and_berries)),
+                rep("Vegetables", length(vegetables)),
+                rep("Dairy and Eggs", length(dairy_and_eggs)),
+                rep("Cereals", length(cereals)),
+                rep("Pulses, Nuts, and Legumes", length(pulses_nuts_legumes)),
+                rep("Oil Crops", length(oil_crops)),
+                rep("Sugar Crops", length(sugar_crops)),
+                rep("Fiber Crops", length(fiber_crops)),
+                rep("Roots and Tubers", length(roots_tubers)),
+                rep("Spices and Aromatics", length(spices_aromatics)),
+                rep("Tropical and Other Fruits", length(tropical_other_fruits)),
+                rep("Industrial Crops", length(industrial_crops)),
+                rep("Miscellaneous", length(miscellaneous)),
+                rep("Animal Products", length(animal_products)))
+)
+
+
+```
+
+```{r}
+
+# Join the mapping with the average_yields to map each item to its food group
+avg_yield_region_foodgroups <- avg_yield_region %>%
+  left_join(food_group_mapping, by = "Item")
+
+```
+
+```{r}
+
+# Define the function
+calculate_yield_stats <- function(data, stat = c("sum", "mean")) {
+  # Ensure that stat is a single character string matching either "sum" or "mean"
+  stat <- match.arg(stat)
+  
+  # Compute total yield by food group and area
+  total_yield_by_foodgroup <- data %>%
+    group_by(Area, FoodGroup) %>%
+    summarize(Yield = match.fun(stat)(AverageYield, na.rm = TRUE), .groups = 'keep')
+
+  # Compute total yield by area
+  total_yield_by_area <- data %>%
+    group_by(Area) %>%
+    summarize(TotalYield = sum(AverageYield, na.rm = TRUE), .groups = 'keep')
+
+  # Join and calculate the proportion
+  result <- total_yield_by_foodgroup %>%
+    left_join(total_yield_by_area, by = "Area") %>%
+    mutate(Proportion = Yield / TotalYield)
+
+  # Select the relevant columns
+  final_result <- result %>%
+    select(Area, FoodGroup, Yield, Proportion)
+
+  return(final_result)
+}
+
+```
+
+
+```{r}
+
+mean_yield_by_foodgroup <- calculate_yield_stats(avg_yield_region_foodgroups, stat="mean")
+total_yield_by_foodgroup <- calculate_yield_stats(avg_yield_region_foodgroups, stat="sum")
+
+# Now plot total yield by foodgroup and region
+ggplot(total_yield_by_foodgroup, aes(x = Area, y = Proportion, fill = FoodGroup)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +  # Flip the coordinates for horizontal bars
+  theme_minimal() +
+  scale_y_continuous(labels = scales::percent_format()) +  # Convert the y-axis into percentage format
+  labs(x = "Area", y = "Proportion", fill = "Food Group",
+       title = "Proportion of Food Groups by Area") +
+  theme(legend.text = element_text(size = 8))  # Move the legend to the bottom
+
+# Now plot mean yield by foodgroup and region
+ggplot(mean_yield_by_foodgroup, aes(x = Area, y = Yield, fill = FoodGroup)) +
+  geom_bar(stat = "identity") +
+  coord_flip() +  # Flip the coordinates for horizontal bars
+  theme_minimal() +
+  labs(x = "Area", y = "Mean Yield", fill = "Food Group",
+       title = "Mean Yield of Food Groups by Area") +
+  theme(legend.text = element_text(size = 8))  # Move the legend to the bottom
+
+```
+
+
+
 # Combine all datasets
 
 ```{r}
@@ -500,17 +762,6 @@ print(variables_table)
 ```
 
 ```{r}
-
-# List of areas to remove
-areas_to_remove <- c(
-    "World", "Africa", "Eastern Africa", "Middle Africa", "Northern Africa", "Southern Africa", "Western Africa",
-    "Americas", "Northern America", "Central America", "Caribbean", "South America",
-    "Asia", "Central Asia", "Eastern Asia", "Southern Asia", "South-eastern Asia", "Western Asia",
-    "Europe", "Eastern Europe", "Northern Europe", "Southern Europe", "Western Europe",
-    "Oceania", "Australia and New Zealand", "Melanesia", "Micronesia", "Polynesia",
-    "European Union (27)", "Least Developed Countries", "Land Locked Developing Countries",
-    "Small Island Developing States", "Low Income Food Deficit Countries", "Net Food Importing Developing Countries"
-)
 
 # Remove rows where the 'Area' is in the list of areas to remove and Year 2022
 combined_final <- combined_final[!combined_final$Area %in% areas_to_remove & combined_final$Year != 2022, ]
