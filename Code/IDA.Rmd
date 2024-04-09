@@ -1,0 +1,89 @@
+---
+title: "Data Prep 2"
+author: "Leonor Brito"
+date: "2024-04-08"
+output: pdf_document
+---
+
+# Directory
+```{r setup}
+
+knitr::opts_knit$set(root.dir = "/Users/leonorbrito/Documents/Master/Thesis/Datasets")
+
+```
+
+# Packages
+```{r}
+
+library(dplyr)
+library(tidyr)
+library(purrr)
+library(ggplot2)
+
+```
+
+# Import dataframes
+```{r}
+
+aquastat <- readxl::read_excel('aquastat.xls')
+credit <- read.csv('credit.csv')
+emissions <- read.csv('emissions.csv')
+employment <- read.csv('employment.csv')
+employment <- employment %>%
+  rename(Item = Indicator)
+gdp_capita <- read.csv('gdp_capita.csv')
+land_use <- read.csv('land_use.csv')
+pesticide_use <- read.csv('pesticide_use.csv')
+temp_change <- read.csv('temp_change.csv')
+temp_change <- temp_change %>%
+  rename(Item = Element)
+
+```
+
+# Data Prep
+
+Function to change from long to wide format
+```{r}
+
+long_to_wide <- function(data) {
+  # Assumes the input data frame 'data' has columns named 'Item', 'Value', 'Area', and 'Year'
+  
+  # Use pivot_wider to spread the 'Item' values across new columns, filling with 'Value'
+  wide_data <- pivot_wider(data, 
+                           names_from = Item, 
+                           values_from = Value, 
+                           id_cols = c(Area, Year))
+  
+  return(wide_data)
+}
+
+```
+
+Convert long to wide
+```{r}
+
+credit_wide <- long_to_wide(credit)
+emissions_wide <- long_to_wide(emissions)
+employment_wide <- long_to_wide(employment)
+gdp_capita_wide <- long_to_wide(gdp_capita)
+land_use_wide <- long_to_wide(land_use)
+pesticide_use_wide <- long_to_wide(pesticide_use)
+temp_change_wide <- long_to_wide(temp_change)
+
+```
+
+## Combine datasets
+
+```{r}
+
+combined_data <- credit_wide %>%
+  full_join(emissions_wide, by = c("Area", "Year")) %>%
+  full_join(employment_wide, by = c("Area", "Year")) %>%
+  full_join(gdp_capita_wide, by = c("Area", "Year")) %>%
+  full_join(land_use_wide, by = c("Area", "Year")) %>%
+  full_join(pesticide_use_wide, by = c("Area", "Year")) %>%
+  full_join(temp_change_wide, by = c("Area", "Year"))
+
+```
+
+
